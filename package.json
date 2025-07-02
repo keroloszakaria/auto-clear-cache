@@ -1,6 +1,6 @@
 {
   "name": "auto-clear-cache",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Automatically clears browser cache and reloads app when a new build version is detected.",
   "main": "index.js",
   "type": "module",
