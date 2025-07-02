@@ -70,6 +70,24 @@ checkVersionAndReload();
 
 ### ✅ Vue 3 (Vite)
 
+#### 1. First, add the plugin to `vite.config.js`:
+
+```js
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import { versionPlugin } from "auto-clear-cache";
+
+export default defineConfig({
+  plugins: [
+    vue(),
+    // ... other plugins
+    versionPlugin(), // Must be added to generate version.json
+  ],
+});
+```
+
+#### 2. Then use it in your `main.js`:
+
 ```js
 // main.js
 import { createApp } from "vue";
@@ -81,9 +99,29 @@ checkVersionAndReload(); // check before mounting
 createApp(App).mount("#app");
 ```
 
+**⚠️ Important:** You MUST add `versionPlugin()` to your Vite config first, otherwise `checkVersionAndReload()` will fail because `version.json` won't exist.
+
 ---
 
 ### ✅ React (Vite)
+
+#### 1. First, add the plugin to `vite.config.js`:
+
+```js
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { versionPlugin } from "auto-clear-cache";
+
+export default defineConfig({
+  plugins: [
+    react(),
+    // ... other plugins
+    versionPlugin(), // Must be added to generate version.json
+  ],
+});
+```
+
+#### 2. Then use it in your `main.jsx`:
 
 ```js
 // main.jsx
@@ -152,6 +190,24 @@ versionPlugin({
 ---
 
 ## 🔧 Troubleshooting
+
+### Plugin Not Generating version.json
+
+If `checkVersionAndReload()` fails with a network error, make sure you've added the plugin to your build configuration:
+
+```js
+// vite.config.js
+import { versionPlugin } from "auto-clear-cache";
+
+export default defineConfig({
+  plugins: [
+    // ... your other plugins
+    versionPlugin(), // ← This is REQUIRED
+  ],
+});
+```
+
+Without the plugin, no `version.json` file will be created, and the version check will fail.
 
 ### Node.js Module Import Issues
 
@@ -225,6 +281,10 @@ No, this version doesn't unregister service workers yet — but you can easily e
 ### Q: Can I see a working demo?
 
 Coming soon: demo repo with Vue, React & Vanilla JS versions!
+
+### Q: checkVersionAndReload() is not working / giving network errors?
+
+Make sure you've added `versionPlugin()` to your Vite config first. Without it, no `version.json` file is generated, and the function will fail to fetch the version.
 
 ### Q: Why do I get "require is not defined" errors?
 
