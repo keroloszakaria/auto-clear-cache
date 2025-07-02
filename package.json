@@ -1,0 +1,50 @@
+{
+  "name": "auto-clear-cache",
+  "version": "1.0.0",
+  "description": "Automatically clears browser cache and reloads app when a new build version is detected.",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [
+    "cache",
+    "cache buster",
+    "versioning",
+    "clear cache",
+    "auto reload",
+    "build version",
+    "vite plugin",
+    "vite cache",
+    "javascript",
+    "vue",
+    "react",
+    "angular",
+    "vanilla js"
+  ],
+  "author": {
+    "name": "Kerolos Zakaria",
+    "email": "your-email@example.com",
+    "url": "https://github.com/keroloszakaria"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/keroloszakaria/auto-clear-cache.git"
+  },
+  "bugs": {
+    "url": "https://github.com/keroloszakaria/auto-clear-cache/issues"
+  },
+  "homepage": "https://github.com/keroloszakaria/auto-clear-cache#readme",
+  "exports": {
+    ".": {
+      "import": "./index.js"
+    },
+    "./vite": {
+      "import": "./vite-plugin-version.js"
+    }
+  },
+  "files": [
+    "index.js",
+    "vite-plugin-version.js",
+    "check-version.js",
+    "README.md"
+  ]
+}
