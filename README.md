@@ -14,7 +14,7 @@ So when you ship a new build, your users might still be using old, cached versio
 - Generating a unique version for each build
 - Saving the version to `version.json`
 - Comparing that version on app load
-- If it’s different → clears `localStorage`, clears `Cache Storage`, and reloads the page!
+- If it's different → clears `localStorage`, clears `Cache Storage`, and reloads the page!
 
 ---
 
@@ -48,10 +48,15 @@ Or use directly in your HTML or app.
 ```js
 import { versionPlugin } from "auto-clear-cache";
 
-export default {
-  plugins: [versionPlugin()],
-};
+export default defineConfig({
+  plugins: [
+    // ... other plugins
+    versionPlugin(), // Add at the end of plugins array
+  ],
+});
 ```
+
+**⚠️ Important:** Make sure to add `versionPlugin()` at the **end** of your plugins array for optimal performance.
 
 #### 2. In your app entry (`main.js`, `main.ts`, etc):
 
@@ -138,7 +143,71 @@ In your build folder (`dist/`), this plugin creates a file like:
 You can change file name and output path if needed:
 
 ```js
-versionPlugin({ fileName: "my-version.json", outDir: "build" });
+versionPlugin({
+  fileName: "my-version.json",
+  outDir: "build",
+});
+```
+
+---
+
+## 🔧 Troubleshooting
+
+### Node.js Module Import Issues
+
+If you encounter errors like `"resolve" is not exported by "__vite-browser-external:path"`, make sure your plugin file uses the correct Node.js module imports:
+
+```js
+// ✅ Correct - vite-plugin-version.js
+import { writeFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+export default function versionPlugin(options = {}) {
+  return {
+    name: "vite-plugin-version",
+    apply: "build", // Only run during build
+    closeBundle() {
+      const version = Date.now().toString();
+      const outDir = options.outDir || "dist";
+      const filePath = resolve(outDir, options.fileName || "version.json");
+      writeFileSync(filePath, JSON.stringify({ version }, null, 2));
+      console.log(`📦 version.json created with version ${version}`);
+    },
+  };
+}
+```
+
+### ES Module Configuration
+
+Ensure your `package.json` has the correct module configuration:
+
+```json
+{
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.js"
+    },
+    "./vite": {
+      "import": "./vite-plugin-version.js"
+    }
+  }
+}
+```
+
+### Plugin Order in Vite
+
+Place the version plugin at the **end** of your plugins array in `vite.config.js`:
+
+```js
+export default defineConfig({
+  plugins: [
+    vue(),
+    tailwindcss(),
+    // ... other plugins
+    versionPlugin(), // ← Last plugin
+  ],
+});
 ```
 
 ---
@@ -149,17 +218,17 @@ versionPlugin({ fileName: "my-version.json", outDir: "build" });
 
 The `fetch('/version.json')` uses `{ cache: 'no-store' }`, and will simply fail silently if offline — no reload happens.
 
----
-
 ### Q: Does this clear service workers?
 
-No, this version doesn’t unregister service workers yet — but you can easily extend it.
-
----
+No, this version doesn't unregister service workers yet — but you can easily extend it.
 
 ### Q: Can I see a working demo?
 
 Coming soon: demo repo with Vue, React & Vanilla JS versions!
+
+### Q: Why do I get "require is not defined" errors?
+
+This happens when mixing CommonJS (`require`) with ES modules. Make sure all your files use ES module syntax (`import`/`export`) and your `package.json` has `"type": "module"`.
 
 ---
 
@@ -173,30 +242,7 @@ Coming soon: demo repo with Vue, React & Vanilla JS versions!
 
 ---
 
-## 📌 TODO (Contributions Welcome!)
-
-- [ ] Add CLI (`auto-clear-cache init`)
-- [ ] Add support for unregistering service workers
-- [ ] Add integration with Webpack
-- [ ] Add example repo
-
----
-
-## 🔖 License
-
-MIT — by [Krullus](https://github.com/krullus)
-
----
-
-## 📸 Optional: Add an infographic
-
-_We can create a simple diagram later showing:_
-
-> build → generate version.json → compare → cache clear → reload
-
----
-
-### ✅ Angular (CLI or Vite-based)
+## ✅ Angular (CLI or Vite-based)
 
 #### 🔹 If using Angular CLI (default setup):
 
@@ -241,8 +287,6 @@ checkVersionAndReload().then(() => {
 });
 ```
 
----
-
 #### 🔹 If using Angular with Vite:
 
 Use the same instructions as for Vite projects:
@@ -261,16 +305,45 @@ Then add `checkVersionAndReload()` to `main.ts` before app initialization.
 
 ---
 
-## ✅ Summary
+## ✅ Framework Compatibility
 
-| Framework  | Works? | Notes           |
-| ---------- | ------ | --------------- |
-| Vue 3      | ✅     | Vite only       |
-| React      | ✅     | Vite only       |
-| Angular    | ✅     | CLI or Vite     |
-| Vanilla JS | ✅     | Any static site |
-| Svelte     | ✅     | Vite or manual  |
+| Framework  | Works? | Notes                   |
+| ---------- | ------ | ----------------------- |
+| Vue 3      | ✅     | Vite recommended        |
+| React      | ✅     | Vite recommended        |
+| Angular    | ✅     | CLI or Vite             |
+| Vanilla JS | ✅     | Any static site         |
+| Svelte     | ✅     | Vite or manual setup    |
+| Nuxt       | ✅     | Use in client-side only |
+| Next.js    | ⚠️     | Requires custom setup   |
+
+---
+
+## 📌 TODO (Contributions Welcome!)
+
+- [ ] Add CLI (`auto-clear-cache init`)
+- [ ] Add support for unregistering service workers
+- [ ] Add integration with Webpack
+- [ ] Add example repo
+- [ ] Add TypeScript definitions
+- [ ] Add Next.js compatibility
+
+---
+
+## 🔖 License
+
+MIT — by [Kerolos Zakaria](https://github.com/keroloszakaria)
 
 ---
 
 Let your users always enjoy the latest version of your app — no more "it's not working" because of stale cache 🚀
+
+## 🤝 Contributing
+
+Found a bug or want to add a feature? PRs are welcome!
+
+1. Fork the repo
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
